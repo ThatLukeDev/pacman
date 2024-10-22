@@ -1,24 +1,26 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.CodeDom;
+using System.Collections.Generic;
 
 namespace pacman
 {
     public class Entity
     {
-        Vector2 position;
-        Vector2 size;
-        Vector2 velocity;
-        Texture2D sprite;
+        public Vector2 position;
+        public Vector2 size;
+        public Vector2 velocity;
+        public Texture2D sprite;
 
-        Entity()
+        public Entity()
         {
             position = new Vector2();
             size = new Vector2();
             velocity = new Vector2();
         }
 
-        Entity(Vector2 _position, Vector2 _size, Texture2D _sprite)
+        public Entity(Vector2 _position, Vector2 _size, Texture2D _sprite)
         {
             position = _position;
             size = _size;
@@ -26,16 +28,46 @@ namespace pacman
             sprite = _sprite;
         }
 
-        Rectangle bounds()
+        public Rectangle bounds()
         {
             return new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
         }
 
-        void update(float dtime)
+        public void update(float dtime)
         {
             position += dtime * velocity;
         }
-        void update()
+        public void update()
+        {
+            update(1 / 60f);
+        }
+    }
+
+    public class Scene
+    {
+        public Dictionary<string, Entity> entities = new Dictionary<string, Entity>();
+
+        public Entity this[string name]
+        {
+            get
+            {
+                return entities[name];
+            }
+            set
+            {
+                entities[name] = value;
+            }
+        }
+
+        public void update(float dtime)
+        {
+            foreach (var entity in entities.Values)
+            {
+                entity.update(dtime);
+            }
+        }
+
+        public void update()
         {
             update(1 / 60f);
         }
@@ -73,7 +105,7 @@ namespace pacman
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.White);
 
             base.Draw(gameTime);
         }
