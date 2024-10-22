@@ -4,24 +4,47 @@ using Microsoft.Xna.Framework.Input;
 
 namespace pacman
 {
+    public class Entity
+    {
+        Vector2 position;
+        Vector2 size;
+        Vector2 velocity;
+        Texture2D sprite;
+
+        Entity()
+        {
+            position = new Vector2();
+            size = new Vector2();
+            velocity = new Vector2();
+        }
+
+        Entity(Vector2 _position, Vector2 _size, Texture2D _sprite)
+        {
+            position = _position;
+            size = _size;
+            velocity = new Vector2();
+            sprite = _sprite;
+        }
+
+        Rectangle bounds()
+        {
+            return new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
+        }
+
+        void update(float dtime)
+        {
+            position += dtime * velocity;
+        }
+        void update()
+        {
+            update(1 / 60f);
+        }
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-
-        Texture2D _pacmantex;
-
-        Texture2D _fruit1tex;
-        Texture2D _fruit2tex;
-        Texture2D _fruit3tex;
-        Texture2D _fruit4tex;
-
-        Texture2D _ghost1tex;
-        Texture2D _ghost2tex;
-        Texture2D _ghost3tex;
-        Texture2D _ghost4tex;
-
-        Texture2D _ghost0tex;
 
         public Game1()
         {
@@ -38,20 +61,6 @@ namespace pacman
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            _pacmantex = Content.Load<Texture2D>("pacman");
-
-            _fruit1tex = Content.Load<Texture2D>("fruit1");
-            _fruit2tex = Content.Load<Texture2D>("fruit2");
-            _fruit3tex = Content.Load<Texture2D>("fruit3");
-            _fruit4tex = Content.Load<Texture2D>("fruit4");
-
-            _ghost1tex = Content.Load<Texture2D>("ghost1");
-            _ghost2tex = Content.Load<Texture2D>("ghost2");
-            _ghost3tex = Content.Load<Texture2D>("ghost3");
-            _ghost4tex = Content.Load<Texture2D>("ghost4");
-
-            _ghost0tex = Content.Load<Texture2D>("ghost0");
         }
 
         protected override void Update(GameTime gameTime)
