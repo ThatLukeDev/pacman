@@ -117,7 +117,7 @@ namespace pacman
 
             gameScene = new Scene();
 
-            gameScene["plr"] = new Entity(new Vector2(0, 0), new Vector2(50, 50), Content.Load<Texture2D>("pacman"));
+            gameScene["plr"] = new Entity(new Vector2(0, 0), new Vector2(50, 50), Content.Load<Texture2D>("pacman/1"));
             gameScene["plr"].pointToVelocity = true;
         }
 
