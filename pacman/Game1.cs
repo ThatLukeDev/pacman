@@ -85,7 +85,7 @@ namespace pacman
             update(1 / 60f);
         }
 
-        public void draw(SpriteBatch _spriteBatch)
+        public virtual void draw(SpriteBatch _spriteBatch)
         {
             foreach (var entity in entities.Values)
             {
@@ -128,6 +128,67 @@ namespace pacman
         }
     }
 
+    public class Map : Scene
+    {
+        Random rnd = new Random();
+
+        const int WINDOW_WIDTH = 600;
+        const int WINDOW_HEIGHT = 480;
+        const int GAME_WIDTH = 9;
+        const int GAME_HEIGHT = 7;
+
+        byte[][] mapdata = new byte[GAME_WIDTH][];
+
+        Texture2D wallTop, wallBottom, wallLeft, wallRight;
+
+        public Map(Texture2D wallTop, Texture2D wallBottom, Texture2D wallLeft, Texture2D wallRight)
+        {
+            this.wallTop = wallTop;
+            this.wallBottom = wallBottom;
+            this.wallLeft = wallLeft;
+            this.wallRight = wallRight;
+
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                mapdata[i] = new byte[GAME_HEIGHT];
+                for (int j = 0; j < GAME_HEIGHT; j++)
+                {
+                    mapdata[i][j] = (byte)rnd.Next(0, 0b10000);
+                }
+            }
+
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                mapdata[i][0] &= 0b1000;
+                mapdata[i][GAME_HEIGHT - 1] &= 0b0100;
+            }
+            for (int i = 0; i < GAME_HEIGHT; i++)
+            {
+                mapdata[0][i] &= 0b0010;
+                mapdata[GAME_WIDTH - 1][i] &= 0b0001;
+            }
+        }
+
+        public override void draw(SpriteBatch _spriteBatch)
+        {
+            for (int x = 0; x < GAME_WIDTH; x++)
+            {
+                for (int y = 0; y < GAME_HEIGHT; y++)
+                {
+                    _spriteBatch.Draw(wallTop, new Rectangle(x * WINDOW_WIDTH / GAME_WIDTH, y * WINDOW_HEIGHT / GAME_HEIGHT, WINDOW_WIDTH / GAME_WIDTH, WINDOW_HEIGHT / GAME_HEIGHT), Color.White);
+                }
+            }
+
+            foreach (var entity in entities.Values)
+            {
+                if (entity.sprite != null)
+                {
+                    entity.draw(_spriteBatch);
+                }
+            }
+        }
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -135,7 +196,7 @@ namespace pacman
 
         const float PLR_SPEED = 100;
 
-        Scene gameScene;
+        Map gameScene;
 
         public Game1()
         {
@@ -148,9 +209,19 @@ namespace pacman
         {
             base.Initialize();
 
-            gameScene = new Scene();
+            gameScene = new Map(
+                Content.Load<Texture2D>("walls/top"),
+                Content.Load<Texture2D>("walls/bottom"),
+                Content.Load<Texture2D>("walls/left"),
+                Content.Load<Texture2D>("walls/right")
+            );
 
-            gameScene["plr"] = new Pacman(new Vector2(0, 0), new Vector2(50, 50), Content.Load<Texture2D>("pacman/1"), Content.Load<Texture2D>("pacman/2"));
+            gameScene["plr"] = new Pacman(
+                new Vector2(0, 0),
+                new Vector2(32, 32),
+                Content.Load<Texture2D>("pacman/1"),
+                Content.Load<Texture2D>("pacman/2")
+            );
             gameScene["plr"].pointToVelocity = true;
         }
 
