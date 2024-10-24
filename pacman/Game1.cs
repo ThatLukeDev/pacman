@@ -40,6 +40,11 @@ namespace pacman
         {
             position += dtime * velocity;
         }
+
+        public virtual void draw(SpriteBatch _spriteBatch)
+        {
+            _spriteBatch.Draw(sprite, bounds(), Color.White);
+        }
     }
 
     public class Scene
@@ -86,12 +91,40 @@ namespace pacman
             {
                 if (entity.sprite != null)
                 {
-                    if (entity.pointToVelocity)
-                        _spriteBatch.Draw(entity.sprite, entity.bounds(), null, Color.White, 0, new Vector2(entity.sprite.Width / 2, entity.sprite.Height / 2), SpriteEffects.None, 1);
-                    else
-                        _spriteBatch.Draw(entity.sprite, entity.bounds(), Color.White);
+                    entity.draw(_spriteBatch);
                 }
             }
+        }
+    }
+
+    public class Pacman : Entity
+    {
+        Texture2D m_sprite1;
+        Texture2D m_sprite2;
+
+        long count = 0;
+
+        public long renders = 10;
+
+        public Pacman(Vector2 _position, Vector2 _size, Texture2D _sprite1, Texture2D _sprite2)
+        {
+            position = _position;
+            size = _size;
+            velocity = new Vector2();
+            sprite = _sprite1;
+            m_sprite1 = _sprite1;
+            m_sprite2 = _sprite2;
+        }
+
+        public override void draw(SpriteBatch _spriteBatch)
+        {
+            if (count / renders % 2 == 0)
+                sprite = m_sprite1;
+            else
+                sprite = m_sprite2;
+            count++;
+
+            _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
     }
 
@@ -117,7 +150,7 @@ namespace pacman
 
             gameScene = new Scene();
 
-            gameScene["plr"] = new Entity(new Vector2(0, 0), new Vector2(50, 50), Content.Load<Texture2D>("pacman/1"));
+            gameScene["plr"] = new Pacman(new Vector2(0, 0), new Vector2(50, 50), Content.Load<Texture2D>("pacman/1"), Content.Load<Texture2D>("pacman/2"));
             gameScene["plr"].pointToVelocity = true;
         }
 
