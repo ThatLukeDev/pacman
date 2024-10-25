@@ -30,12 +30,12 @@ namespace pacman
             sprite = _sprite;
         }
 
-        public Rectangle bounds()
+        public virtual Rectangle bounds()
         {
             return new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
         }
 
-        public void update(float dtime)
+        public virtual void update(float dtime)
         {
             position += dtime * velocity;
         }
@@ -105,6 +105,8 @@ namespace pacman
 
         public long renders = 10;
 
+        public byte direction = 0b0000;
+
         public Pacman(Vector2 _position, Vector2 _size, Texture2D _sprite1, Texture2D _sprite2)
         {
             position = _position;
@@ -113,6 +115,11 @@ namespace pacman
             sprite = _sprite1;
             m_sprite1 = _sprite1;
             m_sprite2 = _sprite2;
+        }
+
+        public override Rectangle bounds()
+        {
+            return new Rectangle((int)(position.X + size.X / 2), (int)(position.Y + size.Y / 2), (int)size.X, (int)size.Y);
         }
 
         public override void draw(SpriteBatch _spriteBatch)
