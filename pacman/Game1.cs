@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 
 namespace pacman
@@ -132,50 +131,49 @@ namespace pacman
     {
         Random rnd = new Random();
 
-        const int WINDOW_WIDTH = 600;
+        const int WINDOW_WIDTH = 800;
         const int WINDOW_HEIGHT = 480;
-        const int GAME_WIDTH = 9;
-        const int GAME_HEIGHT = 7;
+        const int OBJ_WIDTH = 32;
+        const int OBJ_HEIGHT = 32;
 
-        byte[][] mapdata = new byte[GAME_WIDTH][];
+        byte[][] mapdata = new byte[WINDOW_WIDTH / OBJ_WIDTH][];
 
-        Texture2D wallTop, wallBottom, wallLeft, wallRight;
+        Texture2D _wallTex;
 
-        public Map(Texture2D wallTop, Texture2D wallBottom, Texture2D wallLeft, Texture2D wallRight)
+        public Map(Texture2D wallTex)
         {
-            this.wallTop = wallTop;
-            this.wallBottom = wallBottom;
-            this.wallLeft = wallLeft;
-            this.wallRight = wallRight;
+            this._wallTex = wallTex;
 
-            for (int i = 0; i < GAME_WIDTH; i++)
+            for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
             {
-                mapdata[i] = new byte[GAME_HEIGHT];
-                for (int j = 0; j < GAME_HEIGHT; j++)
+                mapdata[i] = new byte[WINDOW_HEIGHT / OBJ_HEIGHT];
+                for (int j = 0; j < WINDOW_HEIGHT / OBJ_HEIGHT; j++)
                 {
-                    mapdata[i][j] = (byte)rnd.Next(0, 0b10000);
+                    mapdata[i][j] = (byte)rnd.Next(0, 2);
                 }
             }
-
-            for (int i = 0; i < GAME_WIDTH; i++)
+            for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
             {
-                mapdata[i][0] &= 0b1000;
-                mapdata[i][GAME_HEIGHT - 1] &= 0b0100;
+                mapdata[i][0] = 1;
+                mapdata[i][WINDOW_HEIGHT / OBJ_HEIGHT - 1] = 1;
             }
-            for (int i = 0; i < GAME_HEIGHT; i++)
+            for (int j = 0; j < WINDOW_HEIGHT / OBJ_HEIGHT; j++)
             {
-                mapdata[0][i] &= 0b0010;
-                mapdata[GAME_WIDTH - 1][i] &= 0b0001;
+                mapdata[0][j] = 1;
+                mapdata[WINDOW_WIDTH / OBJ_WIDTH - 1][j] = 1;
             }
         }
 
         public override void draw(SpriteBatch _spriteBatch)
         {
-            for (int x = 0; x < GAME_WIDTH; x++)
+            for (int x = 0; x < WINDOW_WIDTH / OBJ_WIDTH; x++)
             {
-                for (int y = 0; y < GAME_HEIGHT; y++)
+                for (int y = 0; y < WINDOW_HEIGHT / OBJ_HEIGHT; y++)
                 {
-                    _spriteBatch.Draw(wallTop, new Rectangle(x * WINDOW_WIDTH / GAME_WIDTH, y * WINDOW_HEIGHT / GAME_HEIGHT, WINDOW_WIDTH / GAME_WIDTH, WINDOW_HEIGHT / GAME_HEIGHT), Color.White);
+                    if (mapdata[x][y] != 0)
+                    {
+                        _spriteBatch.Draw(_wallTex, new Rectangle(x * OBJ_WIDTH, y * OBJ_HEIGHT, OBJ_WIDTH, OBJ_HEIGHT), Color.White);
+                    }
                 }
             }
 
@@ -209,12 +207,7 @@ namespace pacman
         {
             base.Initialize();
 
-            gameScene = new Map(
-                Content.Load<Texture2D>("walls/top"),
-                Content.Load<Texture2D>("walls/bottom"),
-                Content.Load<Texture2D>("walls/left"),
-                Content.Load<Texture2D>("walls/right")
-            );
+            gameScene = new Map(Content.Load<Texture2D>("walls/full"));
 
             gameScene["plr"] = new Pacman(
                 new Vector2(0, 0),
