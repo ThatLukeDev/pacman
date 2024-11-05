@@ -156,7 +156,57 @@ namespace pacman
                 mapdata[i] = new byte[WINDOW_HEIGHT / OBJ_HEIGHT];
                 for (int j = 0; j < WINDOW_HEIGHT / OBJ_HEIGHT; j++)
                 {
-                    mapdata[i][j] = (byte)rnd.Next(0, 2);
+                    mapdata[i][j] = 1;
+                    if (i % 2 == 1 && j % 2 == 1)
+                    {
+                        mapdata[i][j] = 0;
+                    }
+                    else if (i % 2 != j % 2)
+                    {
+                        mapdata[i][j] = (byte)rnd.Next(0, 2);
+                    }
+                    else if (i % 2 == 1 || j % 2 == 1)
+                    {
+                        mapdata[i][j] = 1;
+                    }
+                }
+            }
+            for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
+            {
+                mapdata[i][0] = 1;
+                mapdata[i][WINDOW_HEIGHT / OBJ_HEIGHT - 1] = 1;
+            }
+            for (int j = 0; j < WINDOW_HEIGHT / OBJ_HEIGHT; j++)
+            {
+                mapdata[0][j] = 1;
+                mapdata[WINDOW_WIDTH / OBJ_WIDTH - 1][j] = 1;
+            }
+            for (int i = 1; i < WINDOW_WIDTH / OBJ_WIDTH; i += 2)
+            {
+                for (int j = 1; j < WINDOW_HEIGHT / OBJ_HEIGHT; j += 2)
+                {
+                    int connections = 0;
+                    if (mapdata[i-1][j] == 0)
+                        connections++;
+                    if (mapdata[i+1][j] == 0)
+                        connections++;
+                    if (mapdata[i][j-1] == 0)
+                        connections++;
+                    if (mapdata[i][j+1] == 0)
+                        connections++;
+
+                    while (connections < 2)
+                    {
+                        int xoffset = 0;
+                        int yoffset = 0;
+                        while (!((xoffset == 0 || yoffset == 0) && (xoffset != 0 || yoffset != 0) && mapdata[i + xoffset][j + yoffset] == 1))
+                        {
+                            xoffset = rnd.Next(-1, 2);
+                            yoffset = rnd.Next(-1, 2);
+                        }
+                        mapdata[i + xoffset][j + yoffset] = 0;
+                        connections++;
+                    }
                 }
             }
             for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
