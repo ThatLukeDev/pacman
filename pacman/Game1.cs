@@ -96,8 +96,19 @@ namespace pacman
         }
     }
 
+    public enum directionType
+    {
+        none,
+        up,
+        down,
+        left,
+        right
+    }
+
     public class Pacman : Entity
     {
+        float speed = 100;
+
         Texture2D m_sprite1;
         Texture2D m_sprite2;
 
@@ -105,7 +116,7 @@ namespace pacman
 
         public long renders = 10;
 
-        public byte direction = 0b0000;
+        public directionType direction = directionType.none;
 
         public Pacman(Vector2 _position, Vector2 _size, Texture2D _sprite1, Texture2D _sprite2)
         {
@@ -132,24 +143,77 @@ namespace pacman
 
             _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
+
+        public void stepVelocity(byte[][] map)
+        {
+            if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
+            {
+                int x = (int)(position.X / Map.OBJ_WIDTH);
+                int y = (int)(position.Y / Map.OBJ_HEIGHT);
+
+                int movx = 0;
+                int movy = 0;
+
+                switch (direction)
+                {
+                    case directionType.up:
+                        movy = -1;
+                        break;
+                    case directionType.down:
+                        movy = 1;
+                        break;
+                    case directionType.left:
+                        movx = -1;
+                        break;
+                    case directionType.right:
+                        movx = 1;
+                        break;
+                }
+
+                if (map[x + movx][y + movy] == 0)
+                {
+                    velocity.X = movx * speed;
+                    velocity.Y = movy * speed;
+                }
+                else
+                {
+                    movx = 0;
+                    if (velocity.X < 0)
+                        movx = -1;
+                    else if (velocity.X > 0)
+                        movx = 1;
+
+                    movy = 0;
+                    if (velocity.Y < 0)
+                        movy = -1;
+                    else if (velocity.Y > 0)
+                        movy = 1;
+
+                    if (map[x + movx][y + movy] != 0)
+                    {
+                        velocity = Vector2.Zero;
+                    }
+                }
+            }
+        }
     }
 
     public class Map : Scene
     {
         Random rnd = new Random();
 
-        const int WINDOW_WIDTH = 800;
-        const int WINDOW_HEIGHT = 480;
-        const int OBJ_WIDTH = 32;
-        const int OBJ_HEIGHT = 32;
+        public const int WINDOW_WIDTH = 800;
+        public const int WINDOW_HEIGHT = 480;
+        public const int OBJ_WIDTH = 32;
+        public const int OBJ_HEIGHT = 32;
 
-        byte[][] mapdata = new byte[WINDOW_WIDTH / OBJ_WIDTH][];
+        public byte[][] mapdata = new byte[WINDOW_WIDTH / OBJ_WIDTH][];
 
         Texture2D _wallTex;
 
         public Map(Texture2D wallTex)
         {
-            this._wallTex = wallTex;
+            _wallTex = wallTex;
 
             for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
             {
@@ -249,8 +313,6 @@ namespace pacman
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        const float PLR_SPEED = 100;
-
         Map gameScene;
 
         public Game1()
@@ -267,7 +329,7 @@ namespace pacman
             gameScene = new Map(Content.Load<Texture2D>("walls/full"));
 
             gameScene["plr"] = new Pacman(
-                new Vector2(0, 0),
+                new Vector2(32, 32),
                 new Vector2(32, 32),
                 Content.Load<Texture2D>("pacman/1"),
                 Content.Load<Texture2D>("pacman/2")
@@ -295,13 +357,14 @@ namespace pacman
             GraphicsDevice.Clear(Color.Black);
 
             if (Keyboard.GetState().IsKeyDown(Keys.W))
-                gameScene["plr"].velocity = new Vector2(0, -PLR_SPEED);
+                ((Pacman)gameScene["plr"]).direction = directionType.up;
             else if (Keyboard.GetState().IsKeyDown(Keys.S))
-                gameScene["plr"].velocity = new Vector2(0, PLR_SPEED);
+                ((Pacman)gameScene["plr"]).direction = directionType.down;
             else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                gameScene["plr"].velocity = new Vector2(-PLR_SPEED, 0);
+                ((Pacman)gameScene["plr"]).direction = directionType.left;
             else if (Keyboard.GetState().IsKeyDown(Keys.D))
-                gameScene["plr"].velocity = new Vector2(PLR_SPEED, 0);
+                ((Pacman)gameScene["plr"]).direction = directionType.right;
+            ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
 
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
             gameScene.draw(_spriteBatch);
