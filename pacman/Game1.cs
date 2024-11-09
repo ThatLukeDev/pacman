@@ -118,6 +118,8 @@ namespace pacman
 
         public directionType direction = directionType.none;
 
+        int points = 0;
+
         public Pacman(Vector2 _position, Vector2 _size, Texture2D _sprite1, Texture2D _sprite2)
         {
             position = _position;
@@ -170,7 +172,7 @@ namespace pacman
                         break;
                 }
 
-                if (map[x + movx][y + movy] == 0)
+                if (map[x + movx][y + movy] != 1)
                 {
                     velocity.X = movx * speed;
                     velocity.Y = movy * speed;
@@ -189,10 +191,25 @@ namespace pacman
                     else if (velocity.Y > 0)
                         movy = 1;
 
-                    if (map[x + movx][y + movy] != 0)
+                    if (map[x + movx][y + movy] == 1)
                     {
                         velocity = Vector2.Zero;
                     }
+                }
+            }
+        }
+
+        public void collectBits(ref byte[][] map)
+        {
+            if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
+            {
+                int x = (int)(position.X / Map.OBJ_WIDTH);
+                int y = (int)(position.Y / Map.OBJ_HEIGHT);
+
+                if (map[x][y] != 0)
+                {
+                    map[x][y] = 0;
+                    points++;
                 }
             }
         }
@@ -210,10 +227,12 @@ namespace pacman
         public byte[][] mapdata = new byte[WINDOW_WIDTH / OBJ_WIDTH][];
 
         Texture2D _wallTex;
+        Texture2D _bitText;
 
-        public Map(Texture2D wallTex)
+        public Map(Texture2D wallTex, Texture2D bitText)
         {
             _wallTex = wallTex;
+            _bitText = bitText;
 
             for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
             {
@@ -250,13 +269,13 @@ namespace pacman
                 for (int j = 1; j < WINDOW_HEIGHT / OBJ_HEIGHT; j += 2)
                 {
                     int connections = 0;
-                    if (mapdata[i-1][j] == 0)
+                    if (mapdata[i - 1][j] != 1)
                         connections++;
-                    if (mapdata[i+1][j] == 0)
+                    if (mapdata[i + 1][j] != 1)
                         connections++;
-                    if (mapdata[i][j-1] == 0)
+                    if (mapdata[i][j - 1] != 1)
                         connections++;
-                    if (mapdata[i][j+1] == 0)
+                    if (mapdata[i][j + 1] != 1)
                         connections++;
 
                     while (connections < 2)
@@ -283,6 +302,16 @@ namespace pacman
                 mapdata[0][j] = 1;
                 mapdata[WINDOW_WIDTH / OBJ_WIDTH - 1][j] = 1;
             }
+            for (int i = 0; i < WINDOW_WIDTH / OBJ_WIDTH; i++)
+            {
+                for (int j = 0; j < WINDOW_HEIGHT / OBJ_HEIGHT; j++)
+                {
+                    if (mapdata[i][j] == 0)
+                    {
+                        mapdata[i][j] = 2;
+                    }
+                }
+            }
         }
 
         public override void draw(SpriteBatch _spriteBatch)
@@ -291,9 +320,13 @@ namespace pacman
             {
                 for (int y = 0; y < WINDOW_HEIGHT / OBJ_HEIGHT; y++)
                 {
-                    if (mapdata[x][y] != 0)
+                    if (mapdata[x][y] == 1)
                     {
                         _spriteBatch.Draw(_wallTex, new Rectangle(x * OBJ_WIDTH, y * OBJ_HEIGHT, OBJ_WIDTH, OBJ_HEIGHT), Color.White);
+                    }
+                    if (mapdata[x][y] == 2)
+                    {
+                        _spriteBatch.Draw(_bitText, new Rectangle(x * OBJ_WIDTH, y * OBJ_HEIGHT, OBJ_WIDTH, OBJ_HEIGHT), Color.White);
                     }
                 }
             }
@@ -326,7 +359,7 @@ namespace pacman
         {
             base.Initialize();
 
-            gameScene = new Map(Content.Load<Texture2D>("walls/full"));
+            gameScene = new Map(Content.Load<Texture2D>("walls/full"), Content.Load<Texture2D>("walls/bit"));
 
             gameScene["plr"] = new Pacman(
                 new Vector2(32, 32),
@@ -365,6 +398,7 @@ namespace pacman
             else if (Keyboard.GetState().IsKeyDown(Keys.D))
                 ((Pacman)gameScene["plr"]).direction = directionType.right;
             ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
+            ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
 
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
             gameScene.draw(_spriteBatch);
