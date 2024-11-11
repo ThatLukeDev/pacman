@@ -105,6 +105,146 @@ namespace pacman
         right
     }
 
+    public class Ghost : Entity
+    {
+        float speed = 100;
+
+        Texture2D m_spriteLeft1;
+        Texture2D m_spriteLeft2;
+        Texture2D m_spriteRight1;
+        Texture2D m_spriteRight2;
+        Texture2D m_spriteUp1;
+        Texture2D m_spriteUp2;
+        Texture2D m_spriteDown1;
+        Texture2D m_spriteDown2;
+
+        long count = 0;
+
+        public long renders = 10;
+
+        public directionType direction = directionType.none;
+
+        int points = 0;
+
+        public Ghost(Vector2 _position, Vector2 _size,
+            Texture2D _spriteLeft1, Texture2D _spriteLeft2,
+            Texture2D _spriteRight1, Texture2D _spriteRight2,
+            Texture2D _spriteUp1, Texture2D _spriteUp2,
+            Texture2D _spriteDown1, Texture2D _spriteDown2
+            )
+        {
+            position = _position;
+            size = _size;
+            velocity = new Vector2();
+            sprite = _spriteUp1;
+            m_spriteLeft1 = _spriteLeft1;
+            m_spriteLeft2 = _spriteLeft2;
+            m_spriteRight1 = _spriteRight1;
+            m_spriteRight2 = _spriteRight2;
+            m_spriteUp1 = _spriteUp1;
+            m_spriteUp2 = _spriteUp2;
+            m_spriteDown1 = _spriteDown1;
+            m_spriteDown2 = _spriteDown2;
+        }
+
+        public override Rectangle bounds()
+        {
+            return new Rectangle((int)(position.X + size.X / 2), (int)(position.Y + size.Y / 2), (int)size.X, (int)size.Y);
+        }
+
+        public override void draw(SpriteBatch _spriteBatch)
+        {
+            if (count / renders % 2 == 0)
+                switch (direction)
+                {
+                    case directionType.down:
+                        sprite = m_spriteUp1;
+                        break;
+                    case directionType.left:
+                        sprite = m_spriteLeft1;
+                        break;
+                    case directionType.right:
+                        sprite = m_spriteRight1;
+                        break;
+                    default:
+                        sprite = m_spriteUp1;
+                        break;
+                }
+            else
+                switch (direction)
+                {
+                    case directionType.down:
+                        sprite = m_spriteUp2;
+                        break;
+                    case directionType.left:
+                        sprite = m_spriteLeft2;
+                        break;
+                    case directionType.right:
+                        sprite = m_spriteRight2;
+                        break;
+                    default:
+                        sprite = m_spriteUp2;
+                        break;
+                }
+            count++;
+
+            _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
+        }
+
+        public void stepVelocity(byte[][] map)
+        {
+            if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
+            {
+                int x = (int)(position.X / Map.OBJ_WIDTH);
+                int y = (int)(position.Y / Map.OBJ_HEIGHT);
+
+                int movx = 0;
+                int movy = 0;
+
+                switch (direction)
+                {
+                    case directionType.up:
+                        movy = -1;
+                        break;
+                    case directionType.down:
+                        movy = 1;
+                        break;
+                    case directionType.left:
+                        movx = -1;
+                        break;
+                    case directionType.right:
+                        movx = 1;
+                        break;
+                }
+
+                if (map[x + movx][y + movy] != 1)
+                {
+                    velocity.X = movx * speed;
+                    velocity.Y = movy * speed;
+                }
+                else
+                {
+                    movx = 0;
+                    if (velocity.X < 0)
+                        movx = -1;
+                    else if (velocity.X > 0)
+                        movx = 1;
+
+                    movy = 0;
+                    if (velocity.Y < 0)
+                        movy = -1;
+                    else if (velocity.Y > 0)
+                        movy = 1;
+
+                    if (map[x + movx][y + movy] == 1)
+                    {
+                        velocity = Vector2.Zero;
+                    }
+                }
+            }
+        }
+    }
+
     public class Pacman : Entity
     {
         float speed = 100;
@@ -368,6 +508,54 @@ namespace pacman
                 Content.Load<Texture2D>("pacman/2")
             );
             gameScene["plr"].pointToVelocity = true;
+            gameScene["ghost1"] = new Ghost(
+                new Vector2(288, 224),
+                new Vector2(32, 32),
+                Content.Load<Texture2D>("ghosts/red/left/1"),
+                Content.Load<Texture2D>("ghosts/red/left/2"),
+                Content.Load<Texture2D>("ghosts/red/right/1"),
+                Content.Load<Texture2D>("ghosts/red/right/2"),
+                Content.Load<Texture2D>("ghosts/red/up/1"),
+                Content.Load<Texture2D>("ghosts/red/up/2"),
+                Content.Load<Texture2D>("ghosts/red/down/1"),
+                Content.Load<Texture2D>("ghosts/red/down/2")
+            );
+            gameScene["ghost2"] = new Ghost(
+                new Vector2(352, 224),
+                new Vector2(32, 32),
+                Content.Load<Texture2D>("ghosts/yellow/left/1"),
+                Content.Load<Texture2D>("ghosts/yellow/left/2"),
+                Content.Load<Texture2D>("ghosts/yellow/right/1"),
+                Content.Load<Texture2D>("ghosts/yellow/right/2"),
+                Content.Load<Texture2D>("ghosts/yellow/up/1"),
+                Content.Load<Texture2D>("ghosts/yellow/up/2"),
+                Content.Load<Texture2D>("ghosts/yellow/down/1"),
+                Content.Load<Texture2D>("ghosts/yellow/down/2")
+            );
+            gameScene["ghost3"] = new Ghost(
+                new Vector2(416, 224),
+                new Vector2(32, 32),
+                Content.Load<Texture2D>("ghosts/pink/left/1"),
+                Content.Load<Texture2D>("ghosts/pink/left/2"),
+                Content.Load<Texture2D>("ghosts/pink/right/1"),
+                Content.Load<Texture2D>("ghosts/pink/right/2"),
+                Content.Load<Texture2D>("ghosts/pink/up/1"),
+                Content.Load<Texture2D>("ghosts/pink/up/2"),
+                Content.Load<Texture2D>("ghosts/pink/down/1"),
+                Content.Load<Texture2D>("ghosts/pink/down/2")
+            );
+            gameScene["ghost4"] = new Ghost(
+                new Vector2(480, 224),
+                new Vector2(32, 32),
+                Content.Load<Texture2D>("ghosts/blue/left/1"),
+                Content.Load<Texture2D>("ghosts/blue/left/2"),
+                Content.Load<Texture2D>("ghosts/blue/right/1"),
+                Content.Load<Texture2D>("ghosts/blue/right/2"),
+                Content.Load<Texture2D>("ghosts/blue/up/1"),
+                Content.Load<Texture2D>("ghosts/blue/up/2"),
+                Content.Load<Texture2D>("ghosts/blue/down/1"),
+                Content.Load<Texture2D>("ghosts/blue/down/2")
+            );
         }
 
         protected override void LoadContent()
