@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
 
@@ -98,11 +99,11 @@ namespace pacman
 
     public enum directionType
     {
-        none,
-        up,
-        down,
-        left,
-        right
+        none = 0,
+        up = 1,
+        down = 2,
+        left = 3,
+        right = 4
     }
 
     public class Ghost : Entity
@@ -191,7 +192,7 @@ namespace pacman
             _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
 
-        public void stepVelocity(byte[][] map)
+        public void stepVelocity(byte[][] map, Pacman pacman)
         {
             if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
             {
@@ -478,6 +479,13 @@ namespace pacman
                     entity.draw(_spriteBatch);
                 }
             }
+        }
+
+        public List<directionType> pathFind(Vector2 pos1, Vector2 pos2)
+        {
+            List<directionType> path = new List<directionType>();
+
+            return null;
         }
     }
 
