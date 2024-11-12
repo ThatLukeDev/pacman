@@ -486,7 +486,7 @@ namespace pacman
         {
             List<Vector2> visitedPath = new List<Vector2>() { pos1 };
 
-            pathFind(visitedPath, pos2);
+            visitedPath = pathFind(visitedPath, pos2);
 
             return visitedPath;
         }
@@ -502,12 +502,38 @@ namespace pacman
 
             if (checkPos(-1, 0, ref visitedPath))
             {
-                List<Vector2> checkPath = visitedPath;
-                checkPath.Add(new Vector2(-1, 0));
+                List<Vector2> checkPath = new List<Vector2>(visitedPath);
+                checkPath.Add(visitedPath.Last() + new Vector2(-1, 0));
                 List<Vector2> resultPath = pathFind(checkPath, goal);
+                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
+                    bestPath = new List<Vector2>(resultPath);
+            }
+            if (checkPos(1, 0, ref visitedPath))
+            {
+                List<Vector2> checkPath = new List<Vector2>(visitedPath);
+                checkPath.Add(visitedPath.Last() + new Vector2(1, 0));
+                List<Vector2> resultPath = pathFind(checkPath, goal);
+                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
+                    bestPath = new List<Vector2>(resultPath);
+            }
+            if (checkPos(0, -1, ref visitedPath))
+            {
+                List<Vector2> checkPath = new List<Vector2>(visitedPath);
+                checkPath.Add(visitedPath.Last() + new Vector2(0, -1));
+                List<Vector2> resultPath = pathFind(checkPath, goal);
+                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
+                    bestPath = new List<Vector2>(resultPath);
+            }
+            if (checkPos(0, 1, ref visitedPath))
+            {
+                List<Vector2> checkPath = new List<Vector2>(visitedPath);
+                checkPath.Add(visitedPath.Last() + new Vector2(0, 1));
+                List<Vector2> resultPath = pathFind(checkPath, goal);
+                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
+                    bestPath = new List<Vector2>(resultPath);
             }
 
-            return null;
+            return bestPath;
         }
         bool checkPos(int x, int y, ref List<Vector2> visited)
         {
@@ -593,7 +619,7 @@ namespace pacman
             );
             foreach (var pos in ((Map)gameScene).pathFind(new Vector2(3, 3), new Vector2(1, 1)))
             {
-                ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 1;
+                ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 0;
             }
         }
 
