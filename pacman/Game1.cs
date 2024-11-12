@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace pacman
 {
@@ -481,11 +482,37 @@ namespace pacman
             }
         }
 
-        public List<directionType> pathFind(Vector2 pos1, Vector2 pos2)
+        public List<Vector2> pathFind(Vector2 pos1, Vector2 pos2)
         {
-            List<directionType> path = new List<directionType>();
+            List<Vector2> visitedPath = new List<Vector2>() { pos1 };
+
+            pathFind(visitedPath, pos2);
+
+            return visitedPath;
+        }
+        public List<Vector2> pathFind(List<Vector2> visitedPath, Vector2 goal)
+        {
+            List<Vector2> bestPath = null;
+
+            if (visitedPath.Last() == goal)
+                return visitedPath;
+
+            if (visitedPath == null)
+                return null;
+
+            if (checkPos(-1, 0, ref visitedPath))
+            {
+                List<Vector2> checkPath = visitedPath;
+                checkPath.Add(new Vector2(-1, 0));
+                List<Vector2> resultPath = pathFind(checkPath, goal);
+            }
 
             return null;
+        }
+        bool checkPos(int x, int y, ref List<Vector2> visited)
+        {
+            Vector2 pos = visited.Last() + new Vector2(x, y);
+            return (mapdata[(int)pos.X][(int)pos.Y] != 1) && !visited.Contains(pos);
         }
     }
 
@@ -564,6 +591,10 @@ namespace pacman
                 Content.Load<Texture2D>("ghosts/blue/down/1"),
                 Content.Load<Texture2D>("ghosts/blue/down/2")
             );
+            foreach (var pos in ((Map)gameScene).pathFind(new Vector2(3, 3), new Vector2(1, 1)))
+            {
+                ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 1;
+            }
         }
 
         protected override void LoadContent()
