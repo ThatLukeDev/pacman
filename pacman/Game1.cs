@@ -486,7 +486,7 @@ namespace pacman
         public List<Vector2> pathFind(Vector2 pos1, Vector2 pos2)
         {
             List<Vector2> visitedPath = new List<Vector2>() { pos1 };
-            List<Vector2> checkedSquares = new List<Vector2>() { pos1 };
+            List<Vector2> checkedSquares = new List<Vector2>();
 
             visitedPath = pathFind(visitedPath, pos2, checkedSquares);
 
@@ -508,7 +508,7 @@ namespace pacman
                 checkPath.Add(visitedPath.Last() + new Vector2(-1, 0));
                 List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = new List<Vector2>(resultPath);
+                    bestPath = (resultPath);
             }
             if (checkPos(1, 0, visitedPath, checkedSquares))
             {
@@ -516,7 +516,7 @@ namespace pacman
                 checkPath.Add(visitedPath.Last() + new Vector2(1, 0));
                 List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = new List<Vector2>(resultPath);
+                    bestPath = (resultPath);
             }
             if (checkPos(0, -1, visitedPath, checkedSquares))
             {
@@ -524,7 +524,7 @@ namespace pacman
                 checkPath.Add(visitedPath.Last() + new Vector2(0, -1));
                 List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = new List<Vector2>(resultPath);
+                    bestPath = (resultPath);
             }
             if (checkPos(0, 1, visitedPath, checkedSquares))
             {
@@ -532,7 +532,12 @@ namespace pacman
                 checkPath.Add(visitedPath.Last() + new Vector2(0, 1));
                 List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = new List<Vector2>(resultPath);
+                    bestPath = (resultPath);
+            }
+
+            if (bestPath == null)
+            {
+                checkedSquares.Add(visitedPath.Last());
             }
 
             return bestPath;
@@ -542,7 +547,6 @@ namespace pacman
             Vector2 pos = visited.Last() + new Vector2(x, y);
             if (checkedSquares.Contains(pos))
                 return false;
-            checkedSquares.Add(pos);
             return (mapdata[(int)pos.X][(int)pos.Y] != 1) && !visited.Contains(pos);
         }
     }
