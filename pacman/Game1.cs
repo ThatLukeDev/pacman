@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.VisualBasic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SharpDX.MediaFoundation;
@@ -485,12 +486,13 @@ namespace pacman
         public List<Vector2> pathFind(Vector2 pos1, Vector2 pos2)
         {
             List<Vector2> visitedPath = new List<Vector2>() { pos1 };
+            List<Vector2> checkedSquares = new List<Vector2>() { pos1 };
 
-            visitedPath = pathFind(visitedPath, pos2);
+            visitedPath = pathFind(visitedPath, pos2, checkedSquares);
 
             return visitedPath;
         }
-        public List<Vector2> pathFind(List<Vector2> visitedPath, Vector2 goal)
+        public List<Vector2> pathFind(List<Vector2> visitedPath, Vector2 goal, List<Vector2> checkedSquares)
         {
             List<Vector2> bestPath = null;
 
@@ -500,44 +502,47 @@ namespace pacman
             if (visitedPath == null)
                 return null;
 
-            if (checkPos(-1, 0, ref visitedPath))
+            if (checkPos(-1, 0, visitedPath, checkedSquares))
             {
                 List<Vector2> checkPath = new List<Vector2>(visitedPath);
                 checkPath.Add(visitedPath.Last() + new Vector2(-1, 0));
-                List<Vector2> resultPath = pathFind(checkPath, goal);
+                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
                     bestPath = new List<Vector2>(resultPath);
             }
-            if (checkPos(1, 0, ref visitedPath))
+            if (checkPos(1, 0, visitedPath, checkedSquares))
             {
                 List<Vector2> checkPath = new List<Vector2>(visitedPath);
                 checkPath.Add(visitedPath.Last() + new Vector2(1, 0));
-                List<Vector2> resultPath = pathFind(checkPath, goal);
+                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
                     bestPath = new List<Vector2>(resultPath);
             }
-            if (checkPos(0, -1, ref visitedPath))
+            if (checkPos(0, -1, visitedPath, checkedSquares))
             {
                 List<Vector2> checkPath = new List<Vector2>(visitedPath);
                 checkPath.Add(visitedPath.Last() + new Vector2(0, -1));
-                List<Vector2> resultPath = pathFind(checkPath, goal);
+                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
                     bestPath = new List<Vector2>(resultPath);
             }
-            if (checkPos(0, 1, ref visitedPath))
+            if (checkPos(0, 1, visitedPath, checkedSquares))
             {
                 List<Vector2> checkPath = new List<Vector2>(visitedPath);
                 checkPath.Add(visitedPath.Last() + new Vector2(0, 1));
-                List<Vector2> resultPath = pathFind(checkPath, goal);
+                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
                 if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
                     bestPath = new List<Vector2>(resultPath);
             }
 
             return bestPath;
         }
-        bool checkPos(int x, int y, ref List<Vector2> visited)
+        bool checkPos(int x, int y, List<Vector2> visited, List<Vector2> checkedSquares)
         {
             Vector2 pos = visited.Last() + new Vector2(x, y);
+            if (checkedSquares.Contains(pos))
+                return false;
+            checkedSquares.Add(pos);
             return (mapdata[(int)pos.X][(int)pos.Y] != 1) && !visited.Contains(pos);
         }
     }
@@ -548,6 +553,8 @@ namespace pacman
         private SpriteBatch _spriteBatch;
 
         Map gameScene;
+
+        int atime = 0; // temp
 
         public Game1()
         {
@@ -617,10 +624,6 @@ namespace pacman
                 Content.Load<Texture2D>("ghosts/blue/down/1"),
                 Content.Load<Texture2D>("ghosts/blue/down/2")
             );
-            foreach (var pos in ((Map)gameScene).pathFind(new Vector2(3, 3), new Vector2(1, 1)))
-            {
-                ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 0;
-            }
         }
 
         protected override void LoadContent()
@@ -656,6 +659,16 @@ namespace pacman
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
             gameScene.draw(_spriteBatch);
             _spriteBatch.End();
+
+            if (atime == 60) // temp
+            {
+                List<Vector2> path = ((Map)gameScene).pathFind(new Vector2(1, 1), new Vector2(9, 9));
+                foreach (var pos in path)
+                {
+                    ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 0;
+                }
+            }
+            atime++;
 
             base.Draw(gameTime);
         }
