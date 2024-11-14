@@ -485,69 +485,83 @@ namespace pacman
 
         public List<Vector2> pathFind(Vector2 pos1, Vector2 pos2)
         {
-            List<Vector2> visitedPath = new List<Vector2>() { pos1 };
-            List<Vector2> checkedSquares = new List<Vector2>();
+            int[][] vals = new int[mapdata.Length][];
+            bool[][] closed = new bool[mapdata.Length][];
+            for (int i = 0; i < mapdata.Length; i++)
+            {
+                vals[i] = new int[mapdata[0].Length];
+                closed[i] = new bool[mapdata[0].Length];
+                for (int j = 0; j < mapdata[0].Length; j++)
+                {
+                    vals[i][j] = 2147483647;
+                    closed[i][j] = false;
+                }
+            }
+            vals[(int)pos1.X][(int)pos2.Y] = 0;
 
-            visitedPath = pathFind(visitedPath, pos2, checkedSquares);
+            pathFindDistancers(pos2, ref vals, ref closed);
 
-            return visitedPath;
+            List<Vector2> path = new List<Vector2> { pos2 };
+
+            int workingX = (int)path.Last().X;
+            int workingY = (int)path.Last().Y;
+
+            while (workingX != pos1.X || workingY != pos1.Y)
+            {
+                // go backwards
+
+                path.Add(new Vector2(workingX, workingY));
+            }
+
+            return path;
         }
-        public List<Vector2> pathFind(List<Vector2> visitedPath, Vector2 goal, List<Vector2> checkedSquares)
+        void pathFindDistancers(Vector2 goal, ref int[][] vals, ref bool[][] closed)
         {
-            List<Vector2> bestPath = null;
-
-            if (visitedPath.Last() == goal)
-                return visitedPath;
-
-            if (visitedPath == null)
-                return null;
-
-            if (checkPos(-1, 0, visitedPath, checkedSquares))
+            while (true)
             {
-                List<Vector2> checkPath = new List<Vector2>(visitedPath);
-                checkPath.Add(visitedPath.Last() + new Vector2(-1, 0));
-                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
-                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = (resultPath);
+                int workingX = 0;
+                int workingY = 0;
+                for (int x = 1; x < mapdata.Length; x += 2)
+                {
+                    for (int y = 1; y < mapdata[0].Length; y += 2)
+                    {
+                        if (closed[x][y])
+                            continue;
+                        if (vals[x][y] < vals[workingX][workingY])
+                        {
+                            workingX = x;
+                            workingY = y;
+                        }
+                    }
+                }
+                if (workingX == 0 && workingY == 0)
+                    return;
+                pathFindDistancersSetAt(-1, 0, workingX, workingY, ref vals);
+                pathFindDistancersSetAt(1, 0, workingX, workingY, ref vals);
+                pathFindDistancersSetAt(0, -1, workingX, workingY, ref vals);
+                pathFindDistancersSetAt(0, 1, workingX, workingY, ref vals);
             }
-            if (checkPos(1, 0, visitedPath, checkedSquares))
-            {
-                List<Vector2> checkPath = new List<Vector2>(visitedPath);
-                checkPath.Add(visitedPath.Last() + new Vector2(1, 0));
-                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
-                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = (resultPath);
-            }
-            if (checkPos(0, -1, visitedPath, checkedSquares))
-            {
-                List<Vector2> checkPath = new List<Vector2>(visitedPath);
-                checkPath.Add(visitedPath.Last() + new Vector2(0, -1));
-                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
-                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = (resultPath);
-            }
-            if (checkPos(0, 1, visitedPath, checkedSquares))
-            {
-                List<Vector2> checkPath = new List<Vector2>(visitedPath);
-                checkPath.Add(visitedPath.Last() + new Vector2(0, 1));
-                List<Vector2> resultPath = pathFind(checkPath, goal, checkedSquares);
-                if (resultPath != null && (bestPath == null || resultPath.Count < bestPath.Count))
-                    bestPath = (resultPath);
-            }
-
-            if (bestPath == null)
-            {
-                checkedSquares.Add(visitedPath.Last());
-            }
-
-            return bestPath;
         }
-        bool checkPos(int x, int y, List<Vector2> visited, List<Vector2> checkedSquares)
+
+        void pathFindDistancersSetAt(int x, int y, int workingX, int workingY, ref int[][] vals)
         {
-            Vector2 pos = visited.Last() + new Vector2(x, y);
-            if (checkedSquares.Contains(pos))
-                return false;
-            return (mapdata[(int)pos.X][(int)pos.Y] != 1) && !visited.Contains(pos);
+            if (mapdata[workingX + x][workingY + y] != 1)
+            {
+                int testval = vals[workingX][workingY] + 2;
+                if (testval < vals[workingX + x * 2][workingY + y * 2])
+                {
+                    vals[workingX + x * 2][workingY + x * 2] = testval;
+                }
+            }
+        }
+
+        void pathFindBackwards(int x, int y, ref int workingX, ref int workingY, ref int[][] vals)
+        {
+            if (vals[workingX + x][workingY + y] == vals[workingX][workingY] - 2)
+            {
+                workingX = workingX + x;
+                workingY = workingY + y;
+            }
         }
     }
 
