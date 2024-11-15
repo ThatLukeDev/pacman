@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace pacman
@@ -497,9 +498,21 @@ namespace pacman
                     closed[i][j] = false;
                 }
             }
-            vals[(int)pos1.X][(int)pos2.Y] = 0;
+            vals[(int)pos1.X][(int)pos1.Y] = 0;
 
             pathFindDistancers(pos2, ref vals, ref closed);
+
+            for (int j = 1; j < mapdata[0].Length; j += 2)
+            {
+                for (int i = 1; i < mapdata.Length; i+=2)
+                {
+                    if (vals[i][j] == 2147483647)
+                        Debug.Write($"   ");
+                    else
+                        Debug.Write($"{vals[i][j].ToString("00")} ");
+                }
+                Debug.WriteLine("");
+            }
 
             List<Vector2> path = new List<Vector2> { pos2 };
 
@@ -508,9 +521,22 @@ namespace pacman
 
             while (workingX != pos1.X || workingY != pos1.Y)
             {
-                // go backwards
-
-                path.Add(new Vector2(workingX, workingY));
+                if (pathFindBackwards(1, 0, ref workingX, ref workingY, ref vals))
+                {
+                    path.Add(new Vector2(workingX, workingY));
+                }
+                else if (pathFindBackwards(-1, 0, ref workingX, ref workingY, ref vals))
+                {
+                    path.Add(new Vector2(workingX, workingY));
+                }
+                else if (pathFindBackwards(0, 1, ref workingX, ref workingY, ref vals))
+                {
+                    path.Add(new Vector2(workingX, workingY));
+                }
+                else if (pathFindBackwards(0, -1, ref workingX, ref workingY, ref vals))
+                {
+                    path.Add(new Vector2(workingX, workingY));
+                }
             }
 
             return path;
@@ -534,6 +560,7 @@ namespace pacman
                         }
                     }
                 }
+                closed[workingX][workingY] = true;
                 if (workingX == 0 && workingY == 0)
                     return;
                 pathFindDistancersSetAt(-1, 0, workingX, workingY, ref vals);
@@ -550,18 +577,34 @@ namespace pacman
                 int testval = vals[workingX][workingY] + 2;
                 if (testval < vals[workingX + x * 2][workingY + y * 2])
                 {
-                    vals[workingX + x * 2][workingY + x * 2] = testval;
+                    vals[workingX + x * 2][workingY + y * 2] = testval;
                 }
             }
         }
 
-        void pathFindBackwards(int x, int y, ref int workingX, ref int workingY, ref int[][] vals)
+        bool pathFindBackwards(int x, int y, ref int workingX, ref int workingY, ref int[][] vals)
         {
-            if (vals[workingX + x][workingY + y] == vals[workingX][workingY] - 2)
+            if (workingX + x * 2 < 0)
+                return false;
+            if (workingX + x * 2 > mapdata.Length)
+                return false;
+            if (workingY + y * 2 < 0)
+                return false;
+            if (workingY + y * 2 > mapdata[0].Length)
+                return false;
+
+            if (mapdata[workingX + x][workingY + y] == 1)
+                return false;
+
+            if (vals[workingX + x * 2][workingY + y * 2] == vals[workingX][workingY] - 2)
             {
-                workingX = workingX + x;
-                workingY = workingY + y;
+                workingX = workingX + x * 2;
+                workingY = workingY + y * 2;
+
+                return true;
             }
+
+            return false;
         }
     }
 
