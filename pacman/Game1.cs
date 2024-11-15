@@ -373,7 +373,42 @@ namespace pacman
         Texture2D _wallTex;
         Texture2D _bitText;
 
-        public Map(Texture2D wallTex, Texture2D bitText)
+        public Map(Texture2D wallTex, Texture2D bitTex)
+        {
+            bool mapCorrect = false;
+            while (!mapCorrect)
+            {
+                trialMap(wallTex, bitTex);
+
+                int[][] vals = new int[mapdata.Length][];
+                bool[][] closed = new bool[mapdata.Length][];
+                for (int i = 0; i < mapdata.Length; i++)
+                {
+                    vals[i] = new int[mapdata[0].Length];
+                    closed[i] = new bool[mapdata[0].Length];
+                    for (int j = 0; j < mapdata[0].Length; j++)
+                    {
+                        vals[i][j] = 2147483647;
+                        closed[i][j] = false;
+                    }
+                }
+                vals[1][1] = 0;
+
+                pathFindDistancers(new Vector2(1, 1), ref vals, ref closed);
+
+                mapCorrect = true;
+                for (int j = 1; j < mapdata[0].Length; j += 2)
+                {
+                    for (int i = 1; i < mapdata.Length; i+=2)
+                    {
+                        if (vals[i][j] == 2147483647)
+                            mapCorrect = false;
+                    }
+                }
+            }
+        }
+
+        public void trialMap(Texture2D wallTex, Texture2D bitText)
         {
             _wallTex = wallTex;
             _bitText = bitText;
