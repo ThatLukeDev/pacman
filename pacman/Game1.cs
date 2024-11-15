@@ -537,18 +537,6 @@ namespace pacman
 
             pathFindDistancers(pos2, ref vals, ref closed);
 
-            for (int j = 1; j < mapdata[0].Length; j += 2)
-            {
-                for (int i = 1; i < mapdata.Length; i+=2)
-                {
-                    if (vals[i][j] == 2147483647)
-                        Debug.Write($"   ");
-                    else
-                        Debug.Write($"{vals[i][j].ToString("00")} ");
-                }
-                Debug.WriteLine("");
-            }
-
             List<Vector2> path = new List<Vector2> { pos2 };
 
             int workingX = (int)path.Last().X;
@@ -649,8 +637,6 @@ namespace pacman
         private SpriteBatch _spriteBatch;
 
         Map gameScene;
-
-        int atime = 0; // temp
 
         public Game1()
         {
@@ -755,16 +741,6 @@ namespace pacman
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
             gameScene.draw(_spriteBatch);
             _spriteBatch.End();
-
-            if (atime == 60) // temp
-            {
-                List<Vector2> path = ((Map)gameScene).pathFind(new Vector2(1, 1), new Vector2(9, 9));
-                foreach (var pos in path)
-                {
-                    ((Map)gameScene).mapdata[(int)pos.X][(int)pos.Y] = 0;
-                }
-            }
-            atime++;
 
             base.Draw(gameTime);
         }
