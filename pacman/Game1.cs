@@ -162,7 +162,7 @@ namespace pacman
                 switch (direction)
                 {
                     case directionType.down:
-                        sprite = m_spriteUp1;
+                        sprite = m_spriteDown1;
                         break;
                     case directionType.left:
                         sprite = m_spriteLeft1;
@@ -178,7 +178,7 @@ namespace pacman
                 switch (direction)
                 {
                     case directionType.down:
-                        sprite = m_spriteUp2;
+                        sprite = m_spriteDown2;
                         break;
                     case directionType.left:
                         sprite = m_spriteLeft2;
@@ -199,7 +199,7 @@ namespace pacman
         {
             byte[][] map = ghostMap.mapdata;
 
-            Vector2 adjustedGhostPos = position / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
+            Vector2 adjustedGhostPos = (position + size / 2) / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
             Vector2 ghostPos = new Vector2((int)adjustedGhostPos.X, (int)adjustedGhostPos.Y);
 
             Vector2 adjustedPacmanPos = pacman.position / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
@@ -208,8 +208,6 @@ namespace pacman
                 pacmanPos.X--;
             if (pacmanPos.Y % 2 == 0)
                 pacmanPos.Y--;
-
-            Debug.Print($"{pacmanPos.X}, {pacmanPos.Y}");
 
             if (ghostPos.X % 2 == 1 && ghostPos.Y % 2 == 1)
             {
@@ -667,12 +665,21 @@ namespace pacman
         }
     }
 
+    enum gameState
+    {
+        splash,
+        game,
+        end,
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         Map gameScene;
+        gameState state = gameState.splash;
+        bool changeStateDebounce = false;
 
         public Game1()
         {
@@ -754,7 +761,39 @@ namespace pacman
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            gameScene.update();
+            switch (state)
+            {
+                case gameState.splash:
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && !changeStateDebounce)
+                    {
+                        state = gameState.game;
+                        changeStateDebounce = true;
+                    }
+                    else if (!Keyboard.GetState().IsKeyDown(Keys.Space))
+                    {
+                        changeStateDebounce = false;
+                    }
+                    break;
+                case gameState.game:
+                    gameScene.update();
+                    if (Keyboard.GetState().IsKeyDown(Keys.W))
+                        ((Pacman)gameScene["plr"]).direction = directionType.up;
+                    else if (Keyboard.GetState().IsKeyDown(Keys.S))
+                        ((Pacman)gameScene["plr"]).direction = directionType.down;
+                    else if (Keyboard.GetState().IsKeyDown(Keys.A))
+                        ((Pacman)gameScene["plr"]).direction = directionType.left;
+                    else if (Keyboard.GetState().IsKeyDown(Keys.D))
+                        ((Pacman)gameScene["plr"]).direction = directionType.right;
+                    ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
+                    ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+                    ((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+                    ((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+                    ((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+                    ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
+                    break;
+                case gameState.end:
+                    break;
+            }
 
             base.Update(gameTime);
         }
@@ -763,23 +802,19 @@ namespace pacman
         {
             GraphicsDevice.Clear(Color.Black);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-                ((Pacman)gameScene["plr"]).direction = directionType.up;
-            else if (Keyboard.GetState().IsKeyDown(Keys.S))
-                ((Pacman)gameScene["plr"]).direction = directionType.down;
-            else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                ((Pacman)gameScene["plr"]).direction = directionType.left;
-            else if (Keyboard.GetState().IsKeyDown(Keys.D))
-                ((Pacman)gameScene["plr"]).direction = directionType.right;
-            ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
-            ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-            ((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-            ((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-            ((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-            ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
-
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
-            gameScene.draw(_spriteBatch);
+
+            switch (state)
+            {
+                case gameState.splash:
+                    break;
+                case gameState.game:
+                    gameScene.draw(_spriteBatch);
+                    break;
+                case gameState.end:
+                    break;
+            }
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
