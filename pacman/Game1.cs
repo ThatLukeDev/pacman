@@ -192,11 +192,47 @@ namespace pacman
                 }
             count++;
 
-            _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
+            _spriteBatch.Draw(sprite, bounds(), null, Color.White, 0, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
 
-        public void stepVelocity(byte[][] map, Pacman pacman)
+        public void stepVelocity(Map ghostMap, Pacman pacman)
         {
+            byte[][] map = ghostMap.mapdata;
+
+            Vector2 adjustedGhostPos = position / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
+            Vector2 ghostPos = new Vector2((int)adjustedGhostPos.X, (int)adjustedGhostPos.Y);
+
+            Vector2 adjustedPacmanPos = pacman.position / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
+            Vector2 pacmanPos = new Vector2((int)adjustedPacmanPos.X, (int)adjustedPacmanPos.Y);
+            if (pacmanPos.X % 2 == 0)
+                pacmanPos.X--;
+            if (pacmanPos.Y % 2 == 0)
+                pacmanPos.Y--;
+
+            Debug.Print($"{pacmanPos.X}, {pacmanPos.Y}");
+
+            if (ghostPos.X % 2 == 1 && ghostPos.Y % 2 == 1)
+            {
+                List<Vector2> path = ghostMap.pathFind(ghostPos, pacmanPos);
+                Vector2 offset = path[path.Count - 2] - ghostPos;
+
+                switch (offset)
+                {
+                    case Vector2(-2, 0):
+                        direction = directionType.left;
+                        break;
+                    case Vector2(2, 0):
+                        direction = directionType.right;
+                        break;
+                    case Vector2(0, -2):
+                        direction = directionType.up;
+                        break;
+                    case Vector2(0, 2):
+                        direction = directionType.down;
+                        break;
+                }
+            }
+
             if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
             {
                 int x = (int)(position.X / Map.OBJ_WIDTH);
@@ -736,6 +772,10 @@ namespace pacman
             else if (Keyboard.GetState().IsKeyDown(Keys.D))
                 ((Pacman)gameScene["plr"]).direction = directionType.right;
             ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
+            ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+            ((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+            ((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
+            ((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
             ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
 
             _spriteBatch.Begin(samplerState:SamplerState.PointClamp);
