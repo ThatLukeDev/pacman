@@ -195,19 +195,20 @@ namespace pacman
             _spriteBatch.Draw(sprite, bounds(), null, Color.White, 0, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
 
-        public void stepVelocity(Map ghostMap, Pacman pacman)
+        public bool stepVelocity(Map ghostMap, Vector2 pacmanPos)
         {
             byte[][] map = ghostMap.mapdata;
 
             Vector2 adjustedGhostPos = (position + size / 2) / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
             Vector2 ghostPos = new Vector2((int)adjustedGhostPos.X, (int)adjustedGhostPos.Y);
 
-            Vector2 adjustedPacmanPos = pacman.position / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
-            Vector2 pacmanPos = new Vector2((int)adjustedPacmanPos.X, (int)adjustedPacmanPos.Y);
             if (pacmanPos.X % 2 == 0)
                 pacmanPos.X--;
             if (pacmanPos.Y % 2 == 0)
                 pacmanPos.Y--;
+
+            if (pacmanPos == ghostPos)
+                return false;
 
             if (ghostPos.X % 2 == 1 && ghostPos.Y % 2 == 1)
             {
@@ -280,6 +281,8 @@ namespace pacman
                     }
                 }
             }
+
+            return true;
         }
     }
 
@@ -671,15 +674,72 @@ namespace pacman
         game,
         end,
     }
+    enum gameDifficulty
+    {
+        easy,
+        medium,
+        hard,
+        expert,
+        expertplus
+    }
 
     public class Game1 : Game
     {
+        public void step()
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                firstKeyPressed = true;
+                ((Pacman)gameScene["plr"]).direction = directionType.up;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                firstKeyPressed = true;
+                ((Pacman)gameScene["plr"]).direction = directionType.down;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                firstKeyPressed = true;
+                ((Pacman)gameScene["plr"]).direction = directionType.left;
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                firstKeyPressed = true;
+                ((Pacman)gameScene["plr"]).direction = directionType.right;
+            }
+
+            ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
+            ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
+
+            Vector2 adjustedPacmanPos = (((Pacman)gameScene["plr"]).position + ((Pacman)gameScene["plr"]).size / 2) / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
+            Vector2 pacmanPos = new Vector2((int)(Math.Round(adjustedPacmanPos.X / 2) * 2), (int)(Math.Round(adjustedPacmanPos.Y / 2) * 2));
+
+            Vector2 ghostTargetPos1 = pacmanPos;
+            Vector2 ghostTargetPos2 = pacmanPos;
+            Vector2 ghostTargetPos3 = pacmanPos;
+            Vector2 ghostTargetPos4 = pacmanPos;
+
+            if (firstKeyPressed)
+            {
+                if (!((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, ghostTargetPos1))
+                    state = gameState.end;
+                if (!((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, ghostTargetPos2))
+                    state = gameState.end;
+                if (!((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, ghostTargetPos3))
+                    state = gameState.end;
+                if (!((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, ghostTargetPos4))
+                    state = gameState.end;
+            }
+        }
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         Map gameScene;
-        gameState state = gameState.splash;
+        gameState state;
+        gameDifficulty difficulty = gameDifficulty.easy;
         bool changeStateDebounce = false;
+        bool firstKeyPressed = false;
 
         public Game1()
         {
@@ -691,6 +751,9 @@ namespace pacman
         protected override void Initialize()
         {
             base.Initialize();
+
+            state = gameState.splash;
+            firstKeyPressed = false;
 
             gameScene = new Map(Content.Load<Texture2D>("walls/full"), Content.Load<Texture2D>("walls/bit"));
 
@@ -764,34 +827,32 @@ namespace pacman
             switch (state)
             {
                 case gameState.splash:
-                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && !changeStateDebounce)
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space))
                     {
-                        state = gameState.game;
+                        if (!changeStateDebounce)
+                            state = gameState.game;
                         changeStateDebounce = true;
                     }
-                    else if (!Keyboard.GetState().IsKeyDown(Keys.Space))
+                    else
                     {
                         changeStateDebounce = false;
                     }
                     break;
                 case gameState.game:
+                    step();
                     gameScene.update();
-                    if (Keyboard.GetState().IsKeyDown(Keys.W))
-                        ((Pacman)gameScene["plr"]).direction = directionType.up;
-                    else if (Keyboard.GetState().IsKeyDown(Keys.S))
-                        ((Pacman)gameScene["plr"]).direction = directionType.down;
-                    else if (Keyboard.GetState().IsKeyDown(Keys.A))
-                        ((Pacman)gameScene["plr"]).direction = directionType.left;
-                    else if (Keyboard.GetState().IsKeyDown(Keys.D))
-                        ((Pacman)gameScene["plr"]).direction = directionType.right;
-                    ((Pacman)gameScene["plr"]).stepVelocity(((Map)gameScene).mapdata);
-                    ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-                    ((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-                    ((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-                    ((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, (Pacman)gameScene["plr"]);
-                    ((Pacman)gameScene["plr"]).collectBits(ref ((Map)gameScene).mapdata);
                     break;
                 case gameState.end:
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                    {
+                        if (!changeStateDebounce)
+                            Initialize();
+                        changeStateDebounce = true;
+                    }
+                    else
+                    {
+                        changeStateDebounce = false;
+                    }
                     break;
             }
 
