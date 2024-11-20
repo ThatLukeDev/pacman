@@ -195,7 +195,7 @@ namespace pacman
             _spriteBatch.Draw(sprite, bounds(), null, Color.White, 0, new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
 
-        public bool stepVelocity(Map ghostMap, Vector2 pacmanPos)
+        public void stepVelocity(Map ghostMap, Vector2 pacmanPos)
         {
             byte[][] map = ghostMap.mapdata;
 
@@ -207,13 +207,12 @@ namespace pacman
             if (pacmanPos.Y % 2 == 0)
                 pacmanPos.Y--;
 
-            if (pacmanPos == ghostPos)
-                return false;
-
             if (ghostPos.X % 2 == 1 && ghostPos.Y % 2 == 1)
             {
                 List<Vector2> path = ghostMap.pathFind(ghostPos, pacmanPos);
-                Vector2 offset = path[path.Count - 2] - ghostPos;
+                Vector2 offset = path[path.Count - 1] - ghostPos;
+                if (path.Count > 1)
+                    offset = path[path.Count - 2] - ghostPos;
 
                 switch (offset)
                 {
@@ -281,8 +280,6 @@ namespace pacman
                     }
                 }
             }
-
-            return true;
         }
     }
 
@@ -721,15 +718,20 @@ namespace pacman
 
             if (firstKeyPressed)
             {
-                if (!((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, ghostTargetPos1))
-                    state = gameState.end;
-                if (!((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, ghostTargetPos2))
-                    state = gameState.end;
-                if (!((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, ghostTargetPos3))
-                    state = gameState.end;
-                if (!((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, ghostTargetPos4))
-                    state = gameState.end;
+                ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, ghostTargetPos1);
+                ((Ghost)gameScene["ghost2"]).stepVelocity((Map)gameScene, ghostTargetPos2);
+                ((Ghost)gameScene["ghost3"]).stepVelocity((Map)gameScene, ghostTargetPos3);
+                ((Ghost)gameScene["ghost4"]).stepVelocity((Map)gameScene, ghostTargetPos4);
             }
+
+            if ((gameScene["ghost1"].position - gameScene["plr"].position).Length() < 16)
+                state = gameState.end;
+            if ((gameScene["ghost2"].position - gameScene["plr"].position).Length() < 16)
+                state = gameState.end;
+            if ((gameScene["ghost3"].position - gameScene["plr"].position).Length() < 16)
+                state = gameState.end;
+            if ((gameScene["ghost4"].position - gameScene["plr"].position).Length() < 16)
+                state = gameState.end;
         }
 
         private GraphicsDeviceManager _graphics;
