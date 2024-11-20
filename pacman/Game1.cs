@@ -111,7 +111,7 @@ namespace pacman
 
     public class Ghost : Entity
     {
-        float speed = 100;
+        public float speed = 100;
 
         Texture2D m_spriteLeft1;
         Texture2D m_spriteLeft2;
@@ -716,6 +716,69 @@ namespace pacman
             Vector2 ghostTargetPos3 = pacmanPos;
             Vector2 ghostTargetPos4 = pacmanPos;
 
+            Random rnd = new Random();
+            switch (difficulty)
+            {
+                case gameDifficulty.easy:
+                    ghostTargetPos1 = new Vector2(
+                        (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                        (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                    );
+                    ghostTargetPos2 = new Vector2(
+                        (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                        (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                    );
+                    ghostTargetPos3 = new Vector2(
+                        (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                        (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                    );
+                    ghostTargetPos4 = new Vector2(
+                        (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                        (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                    );
+                    ((Ghost)gameScene["ghost1"]).speed = 200;
+                    ((Ghost)gameScene["ghost2"]).speed = 200;
+                    ((Ghost)gameScene["ghost3"]).speed = 200;
+                    ((Ghost)gameScene["ghost4"]).speed = 200;
+                    break;
+                case gameDifficulty.medium:
+                    ((Ghost)gameScene["ghost1"]).speed = 50;
+                    ((Ghost)gameScene["ghost2"]).speed = 50;
+                    ((Ghost)gameScene["ghost3"]).speed = 50;
+                    ((Ghost)gameScene["ghost4"]).speed = 50;
+                    break;
+                case gameDifficulty.hard:
+                    ((Ghost)gameScene["ghost1"]).speed = 75;
+                    ((Ghost)gameScene["ghost2"]).speed = 75;
+                    ((Ghost)gameScene["ghost3"]).speed = 75;
+                    ((Ghost)gameScene["ghost4"]).speed = 75;
+                    break;
+                case gameDifficulty.expert:
+                    ((Ghost)gameScene["ghost1"]).speed = 100;
+                    ((Ghost)gameScene["ghost2"]).speed = 100;
+                    ((Ghost)gameScene["ghost3"]).speed = 100;
+                    ((Ghost)gameScene["ghost4"]).speed = 100;
+                    break;
+                case gameDifficulty.expertplus:
+                    ((Ghost)gameScene["ghost1"]).speed = 100;
+                    ((Ghost)gameScene["ghost2"]).speed = 100;
+                    ((Ghost)gameScene["ghost3"]).speed = 100;
+                    ((Ghost)gameScene["ghost4"]).speed = 100;
+                    ghostTargetPos1 += new Vector2(1, 0) * (gameScene["plr"].position - gameScene["ghost1"].position).Length() / 100;
+                    ghostTargetPos1.X = Math.Clamp((int)ghostTargetPos1.X, 1, gameScene.mapdata.Length - 2);
+                    ghostTargetPos1.Y = Math.Clamp((int)ghostTargetPos1.Y, 1, gameScene.mapdata[0].Length - 2);
+                    ghostTargetPos2 += new Vector2(-1, 0) * (gameScene["plr"].position - gameScene["ghost2"].position).Length() / 100;
+                    ghostTargetPos2.X = Math.Clamp((int)ghostTargetPos2.X, 1, gameScene.mapdata.Length - 2);
+                    ghostTargetPos2.Y = Math.Clamp((int)ghostTargetPos2.Y, 1, gameScene.mapdata[0].Length - 2);
+                    ghostTargetPos3 += new Vector2(0, 1) * (gameScene["plr"].position - gameScene["ghost3"].position).Length() / 100;
+                    ghostTargetPos3.X = Math.Clamp((int)ghostTargetPos3.X, 1, gameScene.mapdata.Length - 2);
+                    ghostTargetPos3.Y = Math.Clamp((int)ghostTargetPos3.Y, 1, gameScene.mapdata[0].Length - 2);
+                    ghostTargetPos4 += new Vector2(0, -1) * (gameScene["plr"].position - gameScene["ghost4"].position).Length() / 100;
+                    ghostTargetPos4.X = Math.Clamp((int)ghostTargetPos4.X, 1, gameScene.mapdata.Length - 2);
+                    ghostTargetPos4.Y = Math.Clamp((int)ghostTargetPos4.Y, 1, gameScene.mapdata[0].Length - 2);
+                    break;
+            }
+
             if (firstKeyPressed)
             {
                 ((Ghost)gameScene["ghost1"]).stepVelocity((Map)gameScene, ghostTargetPos1);
@@ -739,7 +802,7 @@ namespace pacman
 
         Map gameScene;
         gameState state;
-        gameDifficulty difficulty = gameDifficulty.easy;
+        gameDifficulty difficulty = gameDifficulty.expertplus;
         bool changeStateDebounce = false;
         bool firstKeyPressed = false;
 
