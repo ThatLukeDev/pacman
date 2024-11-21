@@ -296,7 +296,7 @@ namespace pacman
 
         public directionType direction = directionType.none;
 
-        int points = 0;
+        public int points = 0;
 
         public Pacman(Vector2 _position, Vector2 _size, Texture2D _sprite1, Texture2D _sprite2)
         {
@@ -684,22 +684,22 @@ namespace pacman
     {
         public void step()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if (Keyboard.GetState().IsKeyDown(KeyUp))
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.up;
             }
-            else if (Keyboard.GetState().IsKeyDown(Keys.S))
+            else if (Keyboard.GetState().IsKeyDown(KeyDown))
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.down;
             }
-            else if (Keyboard.GetState().IsKeyDown(Keys.A))
+            else if (Keyboard.GetState().IsKeyDown(KeyLeft))
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.left;
             }
-            else if (Keyboard.GetState().IsKeyDown(Keys.D))
+            else if (Keyboard.GetState().IsKeyDown(KeyRight))
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.right;
@@ -764,16 +764,16 @@ namespace pacman
                     ((Ghost)gameScene["ghost2"]).speed = 100;
                     ((Ghost)gameScene["ghost3"]).speed = 100;
                     ((Ghost)gameScene["ghost4"]).speed = 100;
-                    ghostTargetPos1 += new Vector2(1, 0) * (gameScene["plr"].position - gameScene["ghost1"].position).Length() / 100;
+                    ghostTargetPos1 += new Vector2(1, 0) * (gameScene["plr"].position - gameScene["ghost1"].position).Length() / 128;
                     ghostTargetPos1.X = Math.Clamp((int)ghostTargetPos1.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos1.Y = Math.Clamp((int)ghostTargetPos1.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos2 += new Vector2(-1, 0) * (gameScene["plr"].position - gameScene["ghost2"].position).Length() / 100;
+                    ghostTargetPos2 += new Vector2(-1, 0) * (gameScene["plr"].position - gameScene["ghost2"].position).Length() / 128;
                     ghostTargetPos2.X = Math.Clamp((int)ghostTargetPos2.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos2.Y = Math.Clamp((int)ghostTargetPos2.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos3 += new Vector2(0, 1) * (gameScene["plr"].position - gameScene["ghost3"].position).Length() / 100;
+                    ghostTargetPos3 += new Vector2(0, 1) * (gameScene["plr"].position - gameScene["ghost3"].position).Length() / 128;
                     ghostTargetPos3.X = Math.Clamp((int)ghostTargetPos3.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos3.Y = Math.Clamp((int)ghostTargetPos3.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos4 += new Vector2(0, -1) * (gameScene["plr"].position - gameScene["ghost4"].position).Length() / 100;
+                    ghostTargetPos4 += new Vector2(0, -1) * (gameScene["plr"].position - gameScene["ghost4"].position).Length() / 128;
                     ghostTargetPos4.X = Math.Clamp((int)ghostTargetPos4.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos4.Y = Math.Clamp((int)ghostTargetPos4.Y, 1, gameScene.mapdata[0].Length - 2);
                     break;
@@ -804,7 +804,17 @@ namespace pacman
         gameState state;
         gameDifficulty difficulty = gameDifficulty.expertplus;
         bool changeStateDebounce = false;
+        bool changeDifficultyDebounce = false;
         bool firstKeyPressed = false;
+
+        const Keys KeyLeft = Keys.A;
+        const Keys KeyRight = Keys.D;
+        const Keys KeyUp = Keys.W;
+        const Keys KeyDown = Keys.S;
+        const Keys KeyAction = Keys.Space;
+
+        SpriteFont _font;
+        SpriteFont _smallFont;
 
         public Game1()
         {
@@ -816,6 +826,9 @@ namespace pacman
         protected override void Initialize()
         {
             base.Initialize();
+
+            _font = Content.Load<SpriteFont>("font");
+            _smallFont = Content.Load<SpriteFont>("fontSmall");
 
             state = gameState.splash;
             firstKeyPressed = false;
@@ -892,7 +905,7 @@ namespace pacman
             switch (state)
             {
                 case gameState.splash:
-                    if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                    if (Keyboard.GetState().IsKeyDown(KeyAction))
                     {
                         if (!changeStateDebounce)
                             state = gameState.game;
@@ -902,13 +915,29 @@ namespace pacman
                     {
                         changeStateDebounce = false;
                     }
+                    if (Keyboard.GetState().IsKeyDown(KeyRight))
+                    {
+                        if (!changeDifficultyDebounce)
+                            difficulty = (gameDifficulty)((int)(difficulty + 1) % (int)(gameDifficulty.expertplus + 1));
+                        changeDifficultyDebounce = true;
+                    }
+                    else if (Keyboard.GetState().IsKeyDown(KeyLeft))
+                    {
+                        if (!changeDifficultyDebounce)
+                            difficulty = (gameDifficulty)((int)(difficulty + (int)gameDifficulty.expertplus) % (int)(gameDifficulty.expertplus + 1));
+                        changeDifficultyDebounce = true;
+                    }
+                    else
+                    {
+                        changeDifficultyDebounce = false;
+                    }
                     break;
                 case gameState.game:
                     step();
                     gameScene.update();
                     break;
                 case gameState.end:
-                    if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                    if (Keyboard.GetState().IsKeyDown(KeyAction))
                     {
                         if (!changeStateDebounce)
                             Initialize();
@@ -933,11 +962,15 @@ namespace pacman
             switch (state)
             {
                 case gameState.splash:
+                    _spriteBatch.DrawString(_font, "PACMAN", new Vector2(_graphics.GraphicsDevice.Viewport.Width / 2 - 90, _graphics.GraphicsDevice.Viewport.Height / 2 - 30), Color.White);
+                    _spriteBatch.DrawString(_smallFont, $"Difficulty: {difficulty}", new Vector2(), Color.White);
                     break;
                 case gameState.game:
                     gameScene.draw(_spriteBatch);
                     break;
                 case gameState.end:
+                    _spriteBatch.DrawString(_font, "YOU LOSE", new Vector2(_graphics.GraphicsDevice.Viewport.Width / 2 - 120, _graphics.GraphicsDevice.Viewport.Height / 2 - 30), Color.White);
+                    _spriteBatch.DrawString(_smallFont, $"Points: {((Pacman)gameScene["plr"]).points}", new Vector2(), Color.White);
                     break;
             }
 
