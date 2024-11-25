@@ -6,6 +6,7 @@ using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace pacman
@@ -794,10 +795,15 @@ namespace pacman
                 state = gameState.end;
         }
 
+        const string SAVEPATH = "%appdata%\\ThatLukeDev";
+        const string SAVEFILE = "save.dat";
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        double highscore = 0;
+        int highscore = 0;
+
+        FileStream _file;
 
         Map gameScene;
         gameState state;
@@ -889,6 +895,20 @@ namespace pacman
                 Content.Load<Texture2D>("ghosts/blue/down/1"),
                 Content.Load<Texture2D>("ghosts/blue/down/2")
             );
+
+            if (File.Exists(SAVEPATH + "\\" + SAVEFILE))
+            {
+                _file = File.Open(SAVEPATH + "\\" + SAVEFILE, FileMode.Open);
+                for (int i = 0; i < 4; i++)
+                    highscore |= _file.ReadByte() << (i * 8);
+                _file.Close();
+            }
+            else
+            {
+                System.IO.Directory.CreateDirectory(SAVEPATH);
+                _file = File.Create(SAVEPATH + "\\" + SAVEFILE);
+                _file.Close();
+            }
         }
 
         protected override void LoadContent()
@@ -936,8 +956,14 @@ namespace pacman
                     gameScene.update();
                     break;
                 case gameState.end:
-                    if (((Pacman)gameScene["plr"]).points > highscore)
-                        highscore = ((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty);
+                    if (((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty) > highscore)
+                    {
+                        highscore = (int)(((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty));
+                        _file = File.Open(SAVEPATH + "\\" + SAVEFILE, FileMode.Open);
+                        for (int i = 0; i < 4; i++)
+                            _file.WriteByte((byte)(highscore << (i * 8)));
+                        _file.Close();
+                    }
                     if (Keyboard.GetState().IsKeyDown(KeyAction))
                     {
                         if (!changeStateDebounce)
