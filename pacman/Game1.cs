@@ -937,6 +937,10 @@ namespace pacman
             {
                 System.IO.Directory.CreateDirectory(SAVEPATH);
                 _file = File.Create(SAVEPATH + "\\" + SAVEFILE);
+                _file.WriteByte(0);
+                _file.WriteByte(0);
+                _file.WriteByte(0);
+                _file.WriteByte(0);
                 _file.Close();
             }
         }
@@ -996,9 +1000,10 @@ namespace pacman
                     if (((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty) > highscore)
                     {
                         highscore = (int)(((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty));
-                        _file = File.Open(SAVEPATH + "\\" + SAVEFILE, FileMode.Open);
+                        File.Delete(SAVEPATH + "\\" + SAVEFILE);
+                        _file = File.Create(SAVEPATH + "\\" + SAVEFILE);
                         for (int i = 0; i < 4; i++)
-                            _file.WriteByte((byte)(highscore << (i * 8)));
+                            _file.WriteByte((byte)(highscore >> (i * 8)));
                         _file.Close();
                     }
                     if (Keyboard.GetState().IsKeyDown(KeyAction)
@@ -1035,8 +1040,8 @@ namespace pacman
                     break;
                 case gameState.end:
                     _spriteBatch.DrawString(_font, "YOU LOSE", new Vector2(_graphics.GraphicsDevice.Viewport.Width / 2 - 120, _graphics.GraphicsDevice.Viewport.Height / 2 - 30), Color.White);
-                    _spriteBatch.DrawString(_smallFont, $"Points:    {(((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty)).ToString("000")}", new Vector2(), Color.White);
-                    _spriteBatch.DrawString(_smallFont, $"Highscore: {highscore.ToString("000")}", new Vector2(0, 40), Color.White);
+                    _spriteBatch.DrawString(_smallFont, $"Points:    {(((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty)).ToString("0000")}", new Vector2(), Color.White);
+                    _spriteBatch.DrawString(_smallFont, $"Highscore: {highscore.ToString("0000")}", new Vector2(0, 40), Color.White);
                     break;
             }
 
