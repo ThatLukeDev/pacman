@@ -995,6 +995,8 @@ namespace pacman
                 case gameState.game:
                     step();
                     gameScene.update();
+                    if (((Pacman)gameScene["plr"]).points >= 84)
+                        state = gameState.end;
                     break;
                 case gameState.end:
                     if (((Pacman)gameScene["plr"]).points * Math.Pow(2, (int)difficulty) > highscore)
