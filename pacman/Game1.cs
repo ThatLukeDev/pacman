@@ -198,6 +198,9 @@ namespace pacman
 
         public void stepVelocity(Map ghostMap, Vector2 pacmanPos)
         {
+            ghostMap.mapdata[0][ghostMap.mapdata[0].Length / 2] = 1;
+            ghostMap.mapdata[ghostMap.mapdata.Length - 1][ghostMap.mapdata[0].Length / 2] = 1;
+
             byte[][] map = ghostMap.mapdata;
 
             Vector2 adjustedGhostPos = (position + size / 2) / new Vector2(Map.OBJ_WIDTH, Map.OBJ_HEIGHT);
@@ -207,6 +210,11 @@ namespace pacman
                 pacmanPos.X--;
             if (pacmanPos.Y % 2 == 0)
                 pacmanPos.Y--;
+
+            if (pacmanPos.X < 1)
+                pacmanPos.X += ghostMap.mapdata.Length - 5;
+            if (pacmanPos.X > ghostMap.mapdata.Length - 2)
+                pacmanPos.X -= ghostMap.mapdata.Length - 5;
 
             if (ghostPos.X % 2 == 1 && ghostPos.Y % 2 == 1)
             {
@@ -281,6 +289,8 @@ namespace pacman
                     }
                 }
             }
+            ghostMap.mapdata[0][ghostMap.mapdata[0].Length / 2] = 0;
+            ghostMap.mapdata[ghostMap.mapdata.Length - 1][ghostMap.mapdata[0].Length / 2] = 0;
         }
     }
 
@@ -314,6 +324,11 @@ namespace pacman
             return new Rectangle((int)(position.X + size.X / 2), (int)(position.Y + size.Y / 2), (int)size.X, (int)size.Y);
         }
 
+        public Rectangle bounds(int offsetx)
+        {
+            return new Rectangle((int)(position.X + size.X / 2 + offsetx), (int)(position.Y + size.Y / 2), (int)size.X, (int)size.Y);
+        }
+
         public override void draw(SpriteBatch _spriteBatch)
         {
             if (count / renders % 2 == 0)
@@ -323,10 +338,17 @@ namespace pacman
             count++;
 
             _spriteBatch.Draw(sprite, bounds(), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
+            _spriteBatch.Draw(sprite, bounds(-_spriteBatch.GraphicsDevice.Viewport.Width), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
+            _spriteBatch.Draw(sprite, bounds(_spriteBatch.GraphicsDevice.Viewport.Width), null, Color.White, (float)Math.Atan2(velocity.Y, velocity.X), new Vector2(sprite.Width / 2, sprite.Height / 2), SpriteEffects.None, 1);
         }
 
         public void stepVelocity(byte[][] map)
         {
+            if (position.X < 0)
+                position.X += Map.WINDOW_WIDTH;
+            if (position.X > Map.WINDOW_WIDTH)
+                position.X -= Map.WINDOW_WIDTH;
+
             if (position.X % Map.OBJ_WIDTH <= speed / 60 && position.Y % Map.OBJ_HEIGHT <= speed / 60)
             {
                 int x = (int)(position.X / Map.OBJ_WIDTH);
@@ -351,7 +373,8 @@ namespace pacman
                         break;
                 }
 
-                if (map[x + movx][y + movy] != 1)
+                if (x + movx >= 0 && x + movx <= map.Length - 1
+                    && map[x + movx][y + movy] != 1)
                 {
                     velocity.X = movx * speed;
                     velocity.Y = movy * speed;
@@ -370,7 +393,8 @@ namespace pacman
                     else if (velocity.Y > 0)
                         movy = 1;
 
-                    if (map[x + movx][y + movy] == 1)
+                    if (x + movx >= 0 && x + movx <= map.Length - 1
+                        && map[x + movx][y + movy] == 1)
                     {
                         velocity = Vector2.Zero;
                     }
@@ -627,6 +651,8 @@ namespace pacman
 
         void pathFindDistancersSetAt(int x, int y, int workingX, int workingY, ref int[][] vals)
         {
+            if (workingX + x < 1 || workingX + x > mapdata.Length - 2)
+                return;
             if (mapdata[workingX + x][workingY + y] != 1)
             {
                 int testval = vals[workingX][workingY] + 2;
@@ -932,7 +958,11 @@ namespace pacman
                         || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.A))
                     {
                         if (!changeStateDebounce)
+                        {
                             state = gameState.game;
+                            gameScene.mapdata[0][gameScene.mapdata[0].Length / 2] = 0;
+                            gameScene.mapdata[gameScene.mapdata.Length - 1][gameScene.mapdata[0].Length / 2] = 0;
+                        }
                         changeStateDebounce = true;
                     }
                     else
@@ -971,7 +1001,8 @@ namespace pacman
                             _file.WriteByte((byte)(highscore << (i * 8)));
                         _file.Close();
                     }
-                    if (Keyboard.GetState().IsKeyDown(KeyAction))
+                    if (Keyboard.GetState().IsKeyDown(KeyAction)
+                        || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.A))
                     {
                         if (!changeStateDebounce)
                             Initialize();
