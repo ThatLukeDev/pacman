@@ -682,22 +682,26 @@ namespace pacman
     {
         public void step()
         {
-            if (Keyboard.GetState().IsKeyDown(KeyUp))
+            if (Keyboard.GetState().IsKeyDown(KeyUp)
+                || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0.75)
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.up;
             }
-            else if (Keyboard.GetState().IsKeyDown(KeyDown))
+            else if (Keyboard.GetState().IsKeyDown(KeyDown)
+                || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < -0.75)
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.down;
             }
-            else if (Keyboard.GetState().IsKeyDown(KeyLeft))
+            else if (Keyboard.GetState().IsKeyDown(KeyLeft)
+                || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < -0.75)
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.left;
             }
-            else if (Keyboard.GetState().IsKeyDown(KeyRight))
+            else if (Keyboard.GetState().IsKeyDown(KeyRight)
+                || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.75)
             {
                 firstKeyPressed = true;
                 ((Pacman)gameScene["plr"]).direction = directionType.right;
@@ -924,7 +928,8 @@ namespace pacman
             switch (state)
             {
                 case gameState.splash:
-                    if (Keyboard.GetState().IsKeyDown(KeyAction))
+                    if (Keyboard.GetState().IsKeyDown(KeyAction)
+                        || GamePad.GetState(PlayerIndex.One).IsButtonDown(Buttons.A))
                     {
                         if (!changeStateDebounce)
                             state = gameState.game;
@@ -934,13 +939,15 @@ namespace pacman
                     {
                         changeStateDebounce = false;
                     }
-                    if (Keyboard.GetState().IsKeyDown(KeyRight))
+                    if (Keyboard.GetState().IsKeyDown(KeyRight)
+                        || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0.75)
                     {
                         if (!changeDifficultyDebounce)
                             difficulty = (gameDifficulty)((int)(difficulty + 1) % (int)(gameDifficulty.expertplus + 1));
                         changeDifficultyDebounce = true;
                     }
-                    else if (Keyboard.GetState().IsKeyDown(KeyLeft))
+                    else if (Keyboard.GetState().IsKeyDown(KeyLeft)
+                        || GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < -0.75)
                     {
                         if (!changeDifficultyDebounce)
                             difficulty = (gameDifficulty)((int)(difficulty + (int)gameDifficulty.expertplus) % (int)(gameDifficulty.expertplus + 1));
