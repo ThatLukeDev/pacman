@@ -464,6 +464,14 @@ namespace pacman
                             mapCorrect = false;
                     }
                 }
+
+                if (mapCorrect)
+                {
+                    if (pathFind(new Vector2(1, 1), new Vector2(1, 7)).Count > pathFind(new Vector2(9, 7), new Vector2(1, 7)).Count)
+                    {
+                        mapCorrect = false;
+                    }
+                }
             }
         }
 
