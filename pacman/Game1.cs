@@ -745,9 +745,31 @@ namespace pacman
             Vector2 ghostTargetPos4 = pacmanPos;
 
             Random rnd = new Random();
+            int maxTargetLength = 1024;
             switch (difficulty)
             {
                 case gameDifficulty.easy:
+                    maxTargetLength = 128;
+                    if ((gameScene["ghost1"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos1 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost2"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos2 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost3"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos3 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost4"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos4 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
                     ghostTargetPos1 = new Vector2(
                         (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
                         (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
@@ -770,16 +792,58 @@ namespace pacman
                     ((Ghost)gameScene["ghost4"]).speed = 200;
                     break;
                 case gameDifficulty.medium:
-                    ((Ghost)gameScene["ghost1"]).speed = 50;
-                    ((Ghost)gameScene["ghost2"]).speed = 50;
-                    ((Ghost)gameScene["ghost3"]).speed = 50;
-                    ((Ghost)gameScene["ghost4"]).speed = 50;
+                    maxTargetLength = 256;
+                    if ((gameScene["ghost1"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos1 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost2"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos2 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost3"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos3 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost4"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos4 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    ((Ghost)gameScene["ghost1"]).speed = 100;
+                    ((Ghost)gameScene["ghost2"]).speed = 100;
+                    ((Ghost)gameScene["ghost3"]).speed = 100;
+                    ((Ghost)gameScene["ghost4"]).speed = 100;
                     break;
                 case gameDifficulty.hard:
-                    ((Ghost)gameScene["ghost1"]).speed = 75;
-                    ((Ghost)gameScene["ghost2"]).speed = 75;
-                    ((Ghost)gameScene["ghost3"]).speed = 75;
-                    ((Ghost)gameScene["ghost4"]).speed = 75;
+                    maxTargetLength = 512;
+                    if ((gameScene["ghost1"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos1 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost2"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos2 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost3"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos3 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    if ((gameScene["ghost4"].position - gameScene["plr"].position).Length() > maxTargetLength)
+                        ghostTargetPos4 = new Vector2(
+                            (int)(rnd.Next(0, gameScene.mapdata.Length - 1) / 2) * 2 + 1,
+                            (int)(rnd.Next(0, gameScene.mapdata[0].Length - 1) / 2) * 2 + 1
+                        );
+                    ((Ghost)gameScene["ghost1"]).speed = 100;
+                    ((Ghost)gameScene["ghost2"]).speed = 100;
+                    ((Ghost)gameScene["ghost3"]).speed = 100;
+                    ((Ghost)gameScene["ghost4"]).speed = 100;
                     break;
                 case gameDifficulty.expert:
                     ((Ghost)gameScene["ghost1"]).speed = 100;
@@ -792,16 +856,16 @@ namespace pacman
                     ((Ghost)gameScene["ghost2"]).speed = 100;
                     ((Ghost)gameScene["ghost3"]).speed = 100;
                     ((Ghost)gameScene["ghost4"]).speed = 100;
-                    ghostTargetPos1 += new Vector2(1, 0) * (gameScene["plr"].position - gameScene["ghost1"].position).Length() / 128;
+                    ghostTargetPos1 += new Vector2(1, 0) * (gameScene["plr"].position - gameScene["ghost1"].position).Length() / 112;
                     ghostTargetPos1.X = Math.Clamp((int)ghostTargetPos1.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos1.Y = Math.Clamp((int)ghostTargetPos1.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos2 += new Vector2(-1, 0) * (gameScene["plr"].position - gameScene["ghost2"].position).Length() / 128;
+                    ghostTargetPos2 += new Vector2(-1, 0) * (gameScene["plr"].position - gameScene["ghost2"].position).Length() / 112;
                     ghostTargetPos2.X = Math.Clamp((int)ghostTargetPos2.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos2.Y = Math.Clamp((int)ghostTargetPos2.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos3 += new Vector2(0, 1) * (gameScene["plr"].position - gameScene["ghost3"].position).Length() / 128;
+                    ghostTargetPos3 += new Vector2(0, 1) * (gameScene["plr"].position - gameScene["ghost3"].position).Length() / 112;
                     ghostTargetPos3.X = Math.Clamp((int)ghostTargetPos3.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos3.Y = Math.Clamp((int)ghostTargetPos3.Y, 1, gameScene.mapdata[0].Length - 2);
-                    ghostTargetPos4 += new Vector2(0, -1) * (gameScene["plr"].position - gameScene["ghost4"].position).Length() / 128;
+                    ghostTargetPos4 += new Vector2(0, -1) * (gameScene["plr"].position - gameScene["ghost4"].position).Length() / 112;
                     ghostTargetPos4.X = Math.Clamp((int)ghostTargetPos4.X, 1, gameScene.mapdata.Length - 2);
                     ghostTargetPos4.Y = Math.Clamp((int)ghostTargetPos4.Y, 1, gameScene.mapdata[0].Length - 2);
                     break;
